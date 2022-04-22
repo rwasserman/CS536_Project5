@@ -134,6 +134,13 @@ class ProgramNode extends ASTnode {
         SymTable symTab = new SymTable();
         myDeclList.nameAnalysis(symTab);
     }
+
+    //create new method
+    public void typeChecker() {
+        //call typeChecker() method on myDeclList
+        myDeclList.typeChecker();
+        return;
+    }
     
     public void unparse(PrintWriter p, int indent) {
         myDeclList.unparse(p, indent);
@@ -170,7 +177,14 @@ class DeclListNode extends ASTnode {
                 node.nameAnalysis(symTab);
             }
         }
-    }    
+    } 
+
+    public void typeChecker () {
+        for(DeclNode increment : myDecls) {
+            increment.typeChecker();
+
+        }
+    }
     
     public void unparse(PrintWriter p, int indent) {
         Iterator it = myDecls.iterator();
@@ -249,6 +263,10 @@ class FnBodyNode extends ASTnode {
         myDeclList.nameAnalysis(symTab);
         myStmtList.nameAnalysis(symTab);
     }    
+
+    public void typeChecker(Type type) {
+        myStmtList.typeChecker(type);
+    }
     
     public void unparse(PrintWriter p, int indent) {
         myDeclList.unparse(p, indent);
@@ -273,7 +291,13 @@ class StmtListNode extends ASTnode {
         for (StmtNode node : myStmts) {
             node.nameAnalysis(symTab);
         }
-    }    
+    } 
+    
+    public void typeCheck(Type type) {
+        for(StmtNode increment : myStmts) {
+            increment.typeChecker(type);
+        }
+    }   
     
     public void unparse(PrintWriter p, int indent) {
         Iterator<StmtNode> it = myStmts.iterator();
@@ -325,6 +349,10 @@ abstract class DeclNode extends ASTnode {
      * Note: a formal decl needs to return a sym
      ***/
     abstract public Sym nameAnalysis(SymTable symTab);
+
+    public void typeChecker() {
+        
+    }
 }
 
 class VarDeclNode extends DeclNode {
@@ -759,6 +787,7 @@ class StructNode extends TypeNode {
 
 abstract class StmtNode extends ASTnode {
     abstract public void nameAnalysis(SymTable symTab);
+    abstract public void typeChecker(Type type);
 }
 
 class AssignStmtNode extends StmtNode {
@@ -772,6 +801,10 @@ class AssignStmtNode extends StmtNode {
      ***/
     public void nameAnalysis(SymTable symTab) {
         myAssign.nameAnalysis(symTab);
+    }
+
+    public void typeChecker(Type type) {
+        myAssign.typeChecker();
     }
     
     public void unparse(PrintWriter p, int indent) {
@@ -1060,6 +1093,7 @@ class CallStmtNode extends StmtNode {
         p.println(";");
     }
 
+
     // one kid
     private CallExpNode myCall;
 }
@@ -1099,10 +1133,20 @@ class ReturnStmtNode extends StmtNode {
 // **********************************************************************
 
 abstract class ExpNode extends ASTnode {
+
+    //going to need a way to guaruntee that lineNum and charNum are methods in each of these functions - 
+    //              dictionary method didnt work becuase each sub class is so different from one another
+    //              i think this is how it abstract methods work but feel free to change it 
+    abstract public int getLineNum();
+    abstract public int getCharNum();
+    abstract public Type typeChecker();
+
     /***
      * Default version for nodes with no names
      ***/
-    public void nameAnalysis(SymTable symTab) { }
+    public void nameAnalysis(SymTable symTab) {   
+    }
+
 }
 
 class IntLitNode extends ExpNode {
@@ -1112,6 +1156,10 @@ class IntLitNode extends ExpNode {
         myIntVal = intVal;
     }
 
+    public Type typeChecker() {
+        return new IntType();
+    }
+
     public void unparse(PrintWriter p, int indent) {
         p.print(myIntVal);
     }
@@ -1119,6 +1167,58 @@ class IntLitNode extends ExpNode {
     private int myLineNum;
     private int myCharNum;
     private int myIntVal;
+
+    /*
+    *   Helper getter method that returns the value of myLineNum.
+    *
+    *   @returns an int that represents the value of myLineNum.
+    */
+    public int getLineNum() {
+        return this.myLineNum;
+    }
+
+    /*
+    *   Helper getter method that returns the value of myCharNum.
+    *
+    *   @returns an int that represents the value of myCharNum.
+    */
+    public int getCharNum() {
+        return this.myCharNum;
+    }
+
+    /*
+    * Helper function that returns a dictionary (aka HashMap) with the myLineNum and myCharNum
+    *     values that correspond with this node. 
+    *
+    * @param none
+    *
+    * @return Map<String, Integer> which holds the values for myLineNum, myCharNum.
+    */
+    public Map<String, Integer> xgetLocationInformation() {
+
+        //create new HashMap and add the correct variables in, matching them with a corresponding string. 
+       Map<String, Integer> returnDictionary = new HashMap<String, Integer>();
+       returnDictionary.put("myLineNum", myLineNum);
+       returnDictionary.put("myCharNum", myCharNum);
+
+        //return dictionary
+       return returnDictionary;
+
+    }
+
+    /*
+    * Helper method that returns the intValue of this node. 
+    *
+    * @param None
+    * @return an int representing the value of the myIntVal parameter
+    */
+    public int getIntValue() {
+
+        //return the value
+        return this.myIntVal;
+    }
+
+
 }
 
 class StringLitNode extends ExpNode {
@@ -1128,6 +1228,10 @@ class StringLitNode extends ExpNode {
         myStrVal = strVal;
     }
 
+    public Type typeChecker() {
+        return new StringType();
+    }
+
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
     }
@@ -1135,6 +1239,57 @@ class StringLitNode extends ExpNode {
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
+
+    /*
+    * DEPRECATED
+    * Helper function that returns a dictionary (aka HashMap) with the myLineNum and myCharNum
+    *     values that correspond with this node. 
+    *
+    * @param none
+    *
+    * @return Map<String, Integer> which holds the values for myLineNum, myCharNum.
+    */
+    public Map<String, Integer> xgetLocationInformation() {
+
+        //create new HashMap and add the correct variables in, matching them with a corresponding string. 
+       Map<String, Integer> returnDictionary = new HashMap<String, Integer>();
+       returnDictionary.put("myLineNum", myLineNum);
+       returnDictionary.put("myCharNum", myCharNum);
+
+        //return dictionary
+       return returnDictionary;
+
+    }
+
+    /*
+    *   Helper getter method that returns the value of myLineNum.
+    *
+    *   @returns an int that represents the value of myLineNum.
+    */
+    public int getLineNum() {
+        return this.myLineNum;
+    }
+
+    /*
+    *   Helper getter method that returns the value of myCharNum.
+    *
+    *   @returns an int that represents the value of myCharNum.
+    */
+    public int getCharNum() {
+        return this.myCharNum;
+    }   
+
+    /*
+    * Helper method that returns the corresponding string value for a given node.
+    *
+    * @param None
+    * @return an int representing the value f the myIntVal parameter
+    */
+    public String getMyStrValue() {
+
+        //return the value
+        return this.myStrVal;
+    }
 }
 
 class TrueNode extends ExpNode {
@@ -1147,8 +1302,52 @@ class TrueNode extends ExpNode {
         p.print("true");
     }
 
+     public Type typeChecker() {
+        return new BoolType();
+    }
+
     private int myLineNum;
     private int myCharNum;
+
+    /*
+    * DEPRECATED
+    * Helper function that returns a dictionary (aka HashMap) with the myLineNum and myCharNum
+    *     values that correspond with this node. 
+    *
+    * @param none
+    *
+    * @return Map<String, Integer> which holds the values for myLineNum, myCharNum.
+    */
+    public Map<String, Integer> xgetLocationInformation() {
+
+        //create new HashMap and add the correct variables in, matching them with a corresponding string. 
+       Map<String, Integer> returnDictionary = new HashMap<String, Integer>();
+       returnDictionary.put("myLineNum", myLineNum);
+       returnDictionary.put("myCharNum", myCharNum);
+
+        //return dictionary
+       return returnDictionary;
+
+    }
+
+    /*
+    *   Helper getter method that returns the value of myLineNum.
+    *
+    *   @returns an int that represents the value of myLineNum.
+    */
+    public int getLineNum() {
+        return this.myLineNum;
+    }
+
+    /*
+    *   Helper getter method that returns the value of myCharNum.
+    *
+    *   @returns an int that represents the value of myCharNum.
+    */
+    public int getCharNum() {
+        return this.myCharNum;
+    }   
+
 }
 
 class FalseNode extends ExpNode {
@@ -1161,8 +1360,53 @@ class FalseNode extends ExpNode {
         p.print("false");
     }
 
+    public Type typeChecker() {
+        return new BoolType();
+    }
+
     private int myLineNum;
     private int myCharNum;
+
+    /*
+    * DEPRECATED
+    * Helper function that returns a dictionary (aka HashMap) with the myLineNum and myCharNum
+    *     values that correspond with this node. 
+    *
+    * @param none
+    *
+    * @return Map<String, Integer> which holds the values for myLineNum, myCharNum.
+    */
+    public Map<String, Integer> xgetLocationInformation() {
+
+        //create new HashMap and add the correct variables in, matching them with a corresponding string. 
+       Map<String, Integer> returnDictionary = new HashMap<String, Integer>();
+       returnDictionary.put("myLineNum", myLineNum);
+       returnDictionary.put("myCharNum", myCharNum);
+
+        //return dictionary
+       return returnDictionary;
+
+    }
+
+    /*
+    *   Helper getter method that returns the value of myLineNum.
+    *
+    *   @returns an int that represents the value of myLineNum.
+    */
+    public int getLineNum() {
+        return this.myLineNum;
+    }
+
+    /*
+    *   Helper getter method that returns the value of myCharNum.
+    *
+    *   @returns an int that represents the value of myCharNum.
+    */
+    public int getCharNum() {
+        return this.myCharNum;
+    }   
+
+
 }
 
 class IdNode extends ExpNode {
@@ -1206,7 +1450,7 @@ class IdNode extends ExpNode {
     public int charNum() {
         return myCharNum;
     }    
-    
+
     /***
      * nameAnalysis
      * Given a symbol table symTab, do:
@@ -1227,6 +1471,35 @@ class IdNode extends ExpNode {
             System.exit(-1);
         } 
     }
+
+    /*
+    *   Helper getter method that returns the value of myLineNum.
+    *
+    *   @returns an int that represents the value of myLineNum.
+    */
+    public int getLineNum() {
+        return this.myLineNum;
+    }
+
+    /*
+    *   Helper getter method that returns the value of myCharNum.
+    *
+    *   @returns an int that represents the value of myCharNum.
+    */
+    public int getCharNum() {
+        return this.myCharNum;
+    } 
+
+    public Type typeChecker() {
+        if (mySym != null) {
+            return mySym.getType();
+        }
+        else {
+            System.err.println("ID being checked is null");
+            System.exit(-1);
+        }
+        return null;
+    }  
     
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
@@ -1370,6 +1643,10 @@ class DotAccessExpNode extends ExpNode {
 			} 
         }
     }    
+
+    public Type typeChecker() {
+        return myId.typeChecker();
+    }
     
     public void unparse(PrintWriter p, int indent) {
         myLoc.unparse(p, 0);
@@ -1382,6 +1659,24 @@ class DotAccessExpNode extends ExpNode {
     private IdNode myId;
     private Sym mySym;          // link to Sym for struct type
     private boolean badAccess;  // to prevent multiple, cascading errors
+
+    /*
+    *   Helper getter method that returns the value of myLineNum.
+    *
+    *   @returns an int that represents the value of myLineNum.
+    */
+    public int getLineNum() {
+        return this.myId.lineNum();
+    }
+
+    /*
+    *   Helper getter method that returns the value of myCharNum.
+    *
+    *   @returns an int that represents the value of myCharNum.
+    */
+    public int getCharNum() {
+        return this.myId.charNum();
+    }   
 }
 
 class AssignExpNode extends ExpNode {
@@ -1399,6 +1694,26 @@ class AssignExpNode extends ExpNode {
         myLhs.nameAnalysis(symTab);
         myExp.nameAnalysis(symTab);
     }
+
+    public Type typeChecker() {
+        Type left = myLhs.typeChecker();
+        Type expr = myExp.typeChecker();
+        Type ret = left;
+
+        if (left.isFnType() && expr.isFnType()) {
+            //ErrMsg.fatal(lineNum(), charNum(), "Function assignment");
+            ret = new ErrorType();
+        }
+
+        
+        
+
+        return ret;
+    }
+        
+        
+        
+    }
     
 	// *** unparse ***
     public void unparse(PrintWriter p, int indent) {
@@ -1412,6 +1727,28 @@ class AssignExpNode extends ExpNode {
     // two kids
     private ExpNode myLhs;
     private ExpNode myExp;
+
+    
+    /*
+    *   Helper getter method that returns the value of myLineNum.
+    *
+    *   @returns an int that represents the value of myLineNum.
+    */
+    public int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+    /*
+    *   Helper getter method that returns the value of myCharNum.
+    *
+    *   @returns an int that represents the value of myCharNum.
+    */
+    public int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        
+    }
+
 }
 
 class CallExpNode extends ExpNode {
@@ -1434,6 +1771,10 @@ class CallExpNode extends ExpNode {
         myId.nameAnalysis(symTab);
         myExpList.nameAnalysis(symTab);
     }    
+
+    public Type typeChecker() {
+        return null;
+    }
     
     public void unparse(PrintWriter p, int indent) {
         myId.unparse(p, 0);
@@ -1447,6 +1788,28 @@ class CallExpNode extends ExpNode {
     // two kids
     private IdNode myId;
     private ExpListNode myExpList;  // possibly null
+
+    /*
+    *   Helper methods that gets and returns the correct line number for 
+    *   the statement that corresponds with this node. 
+    *
+    *   @returns the lineNum of the corresponding statement for this node. 
+    */
+    public int getLineNum() {
+        IdNode node = this.myId;
+        return node.lineNum();
+    }
+
+    /*
+    *   Helper methods that gets and returns the correct Char number for 
+    *   the statement that corresponds with this node. 
+    *
+    *   @returns thechareNum of the corresponding statement for this node. 
+    */
+    public int getCharNum() {
+        IdNode node = this.myId;
+        return node.charNum();
+    }
 }
 
 abstract class UnaryExpNode extends ExpNode {
@@ -1464,6 +1827,27 @@ abstract class UnaryExpNode extends ExpNode {
     
     // one child
     protected ExpNode myExp;
+
+    /*
+    *   Helper methods that gets and returns the correct line number for 
+    *   the statement that corresponds with this node. 
+    *
+    *   @returns the lineNum of the corresponding statement for this node. 
+    */
+    public int getLineNum() {
+       int lineNum = this.myExp.getLineNum();
+       return lineNum;
+    }
+
+    /*
+    *   Helper methods that gets and returns the correct Char number for 
+    *   the statement that corresponds with this node. 
+    *
+    *   @returns thechareNum of the corresponding statement for this node. 
+    */
+    public int getCharNum() {
+        return this.myExp.getCharNum();
+    }
 }
 
 abstract class BinaryExpNode extends ExpNode {
@@ -1485,6 +1869,31 @@ abstract class BinaryExpNode extends ExpNode {
     // two kids
     protected ExpNode myExp1;
     protected ExpNode myExp2;
+
+
+    /*
+    *   Helper getter method that returns the value of myLineNum OF THE FIST EXPRESSION.
+    *
+    *   @returns an int that represents the value of myLineNum.
+    */
+    public int getLineNum() {
+
+        ExpNode exp1 = this.myExp1;
+        ExpNode exp2 = this.myExp2;
+        //get the line number of the first expression becuase it is the START of the expression
+        return exp1.getLineNum();
+    }
+
+    /*
+    *   Helper getter method that returns the value of myCharNum OF THE FIRST EXPRESSION.
+    *
+    *   @returns an int that represents the value of myCharNum.
+    */
+    public int getCharNum() {
+        
+        //get the line number of the first expression becuase it is the START of the expression
+        return this.myExp1.getCharNum();
+    }
 }
 
 // **********************************************************************
@@ -1506,6 +1915,19 @@ class UnaryMinusNode extends UnaryExpNode {
 class NotNode extends UnaryExpNode {
     public NotNode(ExpNode exp) {
         super(exp);
+    }
+
+    public Type typeCheck() {
+        Type type = myExp.typeCheck();
+        Type returnType = new BoolType();
+
+        if (!type.isErrorType() && !type.isBoolType()) {
+            ErrMsg.fatal(lineNum(), charNum(), "Logical operator with non-bool operand");
+        }
+        
+        
+        //return the type that results from this operation
+        return returnType;
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -1580,6 +2002,20 @@ class AndNode extends BinaryExpNode {
         super(exp1, exp2);
     }
 
+    public Type typeCheck() {
+        
+        
+        
+        Type returnType = new BoolType();
+
+
+
+
+
+
+        return returnType;
+    }
+
     public void unparse(PrintWriter p, int indent) {
         p.print("(");
         myExp1.unparse(p, 0);
@@ -1592,6 +2028,14 @@ class AndNode extends BinaryExpNode {
 class OrNode extends BinaryExpNode {
     public OrNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
+    }
+
+    public Type typeCheck() {
+
+        Type returnType = new BoolType();
+
+
+        return returnType;
     }
 
     public void unparse(PrintWriter p, int indent) {
