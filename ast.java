@@ -338,6 +338,15 @@ class ExpListNode extends ASTnode {
 
     // list of kids (ExpNodes)
     private List<ExpNode> myExps;
+
+    /*
+    *  Get length of the myExps List<ExpNode>
+    *
+    * @returns an int represennting the list. 
+    */
+    public int getLength() {
+        return myExps.size();
+    }
 }
 
 // **********************************************************************
@@ -802,16 +811,19 @@ class AssignStmtNode extends StmtNode {
     public void nameAnalysis(SymTable symTab) {
         myAssign.nameAnalysis(symTab);
     }
-
-    public void typeChecker(Type type) {
-        myAssign.typeChecker();
-    }
     
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
         myAssign.unparse(p, -1); // no parentheses
         p.println(";");
     }
+
+    /*
+    *   Type checker method.
+    */
+    public void typeChecker(Type type) {
+        myAssign.typeChecker();
+    }   
 
     // one kid
     private AssignExpNode myAssign;
@@ -836,6 +848,49 @@ class PostIncStmtNode extends StmtNode {
         p.println("++;");
     }
 
+    /*
+    *   Type checker method.
+    *
+    *   Parameter is necessary because it is an abstract method. However, the parameter is UNUSED!
+    */
+    public void typeChecker(Type xUnused) {
+
+        //Applying an arithmetic operator (+, -, *, /) to an operand with type other than int. Note: this includes the ++ and -- operators.
+        
+        Type getType = this.myExp.typeChecker();
+
+        // if (getType.isErrorType()) {
+        //     //error type
+        //     return new ErrorType();
+        // }
+
+        if (!getType.isIntType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Arithmetic operator with non-numeric operand");
+        }
+
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        return charNum;
+    }
+
     // one kid
     private ExpNode myExp;
 }
@@ -852,11 +907,52 @@ class PostDecStmtNode extends StmtNode {
     public void nameAnalysis(SymTable symTab) {
         myExp.nameAnalysis(symTab);
     }
+
+    /*
+    *   Type checker method.
+    *
+    *   Parameter is necessary because it is an abstract method. However, the parameter is UNUSED!
+    */
+    public void typeChecker(Type xUnused) {
+
+        //probably will be similar logic to above
+
+        //Applying an arithmetic operator (+, -, *, /) to an operand with type other than int. Note: this includes the ++ and -- operators.
+        Type getType = this.myExp.typeChecker();
+
+        if(getType.isIntType()) {
+            //do nothing
+        }
+        else {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Arithmetic operator with non-numeric operand");
+        }
+    }
     
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
         myExp.unparse(p, 0);
         p.println("--;");
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        return charNum;
     }
 
     // one kid
@@ -874,13 +970,50 @@ class ReadStmtNode extends StmtNode {
      ***/
     public void nameAnalysis(SymTable symTab) {
         myExp.nameAnalysis(symTab);
-    }    
+    }
+    
+    public void typeChecker(Type xUnused) {
+        Type type = myExp.typeChecker();
+
+        if(type.isFnType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Read attempt of function");
+        }
+
+        if(type.isStructDefType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Read attempt of struct name");
+        }
+
+        if(type.isStructType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Read attempt of struct variable");
+        }
+    } 
     
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
         p.print("cin >> ");
         myExp.unparse(p, 0);
         p.println(";");
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        return charNum;
     }
 
     // one kid (actually can only be an IdNode or an ArrayExpNode)
@@ -898,13 +1031,57 @@ class WriteStmtNode extends StmtNode {
      ***/
     public void nameAnalysis(SymTable symTab) {
         myExp.nameAnalysis(symTab);
+        return;
     }
+
+    public void typeChecker(Type xUnused) {
+        Type type = myExp.typeChecker();
+
+        if(type.isFnType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Write attempt of function");
+        }
+
+        if(type.isStructDefType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Write attempt of struct name");
+        }
+
+        if(type.isStructType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Write attempt of struct variable	");
+        }
+
+        if(type.isVoidType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Write attempt of void");
+        }
+
+        return;
+    } 
     
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
         p.print("cout << ");
         myExp.unparse(p, 0);
         p.println(";");
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        return charNum;
     }
 
     // one kid
@@ -939,6 +1116,25 @@ class IfStmtNode extends StmtNode {
             System.exit(-1);        
         }
     }
+
+    /*
+    *  Type checker for if statement.
+    *
+    * @param xUnused, an unused Type
+    */
+    public void typeChecker(Type xUnused) {
+        
+        Type getType = myExp.typeChecker();
+
+        //Using a non-bool expression as the condition of an if.
+        if (!getType.isBoolType()) {
+        
+            //msg //Non-bool expression in condition of if
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Non-bool expression in condition of if");
+        }
+
+        return;
+    }
     
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
@@ -949,6 +1145,27 @@ class IfStmtNode extends StmtNode {
         myStmtList.unparse(p, indent+4);
         doIndent(p, indent);
         p.println("}");
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        return charNum;
     }
 
     // three kids
@@ -1020,6 +1237,47 @@ class IfElseStmtNode extends StmtNode {
         p.println("}");        
     }
 
+
+    /*
+    *  Type checker for if-else statement.
+    *
+    * @param xUnused, an unused Type
+    */
+    public void typeChecker(Type xUnused) {
+        
+        Type getType = myExp.typeChecker();
+
+        //Using a non-bool expression as the condition of an if.
+        if (!getType.isBoolType()) {
+        
+            //msg //Non-bool expression in condition of if
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Non-bool expression in condition of if");
+        }
+
+        return;
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        return charNum;
+    }
+
     // 5 kids
     private ExpNode myExp;
     private DeclListNode myThenDeclList;
@@ -1068,6 +1326,46 @@ class WhileStmtNode extends StmtNode {
         p.println("}");
     }
 
+    /*
+    *  Type checker for while statement.
+    *
+    * @param xUnused, an unused Type
+    */
+    public void typeChecker(Type xUnused) {
+        
+        Type getType = myExp.typeChecker();
+
+        //Check using a non-bool expression as the condition of an while.
+        if (!getType.isBoolType()) {
+        
+                //Non-bool expression in condition of while
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Non-bool expression in condition of while");
+        }
+
+        return;
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        return charNum;
+    }
+
     // three kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -1086,11 +1384,41 @@ class CallStmtNode extends StmtNode {
     public void nameAnalysis(SymTable symTab) {
         myCall.nameAnalysis(symTab);
     }
+    
+    /*
+    *  Type checker for CallStmtNode statement.
+    *
+    * @param xUnused, an unused Type
+    */
+    public void typeChecker(Type xUnused) {
+        myCall.typeChecker();
+    }
 
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
         myCall.unparse(p, indent);
         p.println(";");
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myCall.getLineNum();
+        return lineNum;
+    }
+
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myCall.getCharNum();
+        return charNum;
     }
 
 
@@ -1114,6 +1442,7 @@ class ReturnStmtNode extends StmtNode {
         }
     }
 
+
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
         p.print("return");
@@ -1122,6 +1451,57 @@ class ReturnStmtNode extends StmtNode {
             myExp.unparse(p, 0);
         }
         p.println(";");
+    }
+
+    /*
+    *  Type checker for ReturnStmtNode.
+    *
+    * @param getType, a Type instance.
+    */
+    public void typeChecker(Type getType) {
+
+        //Returning from a non-void function with a plain return statement (i.e., one that does not return a value).
+        if (this.myExp.typeChecker() == null) {
+
+            //Return value missing -> RETURN (0,0)
+            ErrMsg.fatal(0, 0, "Return value missing");   
+        }
+
+        //Returning a value from a void function
+        if(getType.isVoidType()) {
+            //Return with value in void function
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Return with value in void function");
+        }
+
+        //Returning a value of the wrong type from a non-void function.
+        if(getType.isErrorType()) {
+            //Bad return value
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Bad return value");
+        }
+
+        if(!getType.isVoidType())
+
+        return;
+    }
+
+    /* 
+    * Private helper method that gets the lineNum from the ExpNode of this class. 
+    *
+    * @return the appropriate lineNum as an int.
+    */
+    private int getLineNum() {
+        int lineNum = this.myExp.getLineNum();
+        return lineNum;
+    }
+
+    /* 
+    * Private helper method that gets the charNum from the ExpNode of this class. 
+    *
+    * @return the appropriate charNUm as an int.
+    */
+    private int getCharNum() {
+        int charNum = this.myExp.getCharNum();
+        return charNum;
     }
 
     // one kid
@@ -1139,7 +1519,7 @@ abstract class ExpNode extends ASTnode {
     //              i think this is how it abstract methods work but feel free to change it 
     abstract public int getLineNum();
     abstract public int getCharNum();
-    abstract public Type typeChecker();
+    public Type typeChecker() {};
 
     /***
      * Default version for nodes with no names
@@ -1700,20 +2080,54 @@ class AssignExpNode extends ExpNode {
         Type expr = myExp.typeChecker();
         Type ret = left;
 
-        if (left.isFnType() && expr.isFnType()) {
-            //ErrMsg.fatal(lineNum(), charNum(), "Function assignment");
+        //check if myLHS is error type
+        if(left.isErrorType()) {
             ret = new ErrorType();
+            return ret;
         }
 
+        //check if expression is error type
+        if (expr.isErrorType()) {
+            ret = new ErrorType();
+            return ret;
+        }
+
+        //type mismatch check
+        if (left.equals(expr)) {
+            //types match, do nothing
+        } else {
+            //types do not match
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Type mismatch");
+            ret = new ErrorType();
+            return ret;
+        }
+
+        //Assigning a function to a function; e.g., "f = g;", where f and g are function names.
+        if (left.isFnType() && expr.isFnType()) {
+            //we can use the getter from the ExpNode class to get the lineNum and charNum
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Function assignment");
+            ret = new ErrorType();
+            return ret;
+        }
+
+        //assigning a struct name to a struct name; e.g., "A = B;", where A and B are the names of struct types.
+        if (left.isStructDefType() && expr.isStructDefType()) {
+            //we can use the getter from the ExpNode class to get the lineNum and charNum
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Struct name assignment");
+            ret = new ErrorType();
+            return ret;
+        }
         
-        
+        //assigning a struct variable to a struct variable; e.g., "a = b;", where a and b are variables declared to be of struct types.
+        if (left.isStructType() && expr.isStructType()) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Struct variable assignment");
+            ret = new ErrorType();
+            return ret;
+        }
 
         return ret;
     }
         
-        
-        
-    }
     
 	// *** unparse ***
     public void unparse(PrintWriter p, int indent) {
@@ -1746,7 +2160,7 @@ class AssignExpNode extends ExpNode {
     */
     public int getCharNum() {
         int charNum = this.myExp.getCharNum();
-        
+        return charNum;
     }
 
 }
@@ -1773,8 +2187,50 @@ class CallExpNode extends ExpNode {
     }    
 
     public Type typeChecker() {
-        return null;
-    }
+
+        Type ret = null;
+        
+        IdNode functionName = this.myId;
+        FnSym test = (FnSym)myId.sym();
+        ExpListNode params = this.myExpList;
+
+        int numberOfParams = params.getLength();
+        int numberOfParamsTest = test.getNumParams();
+
+        //Check Calling something other than a function; e.g., "x();", where x is not a function name.
+        //       Note: In this case, you should not type-check the actual parameters.
+        if (myId.typeChecker().isFnType()) {
+            //do nothing
+        } else {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Call attempt on non-function");
+            ret = new ErrorType();
+            return ret;
+        }
+
+       
+        //Calling a function with the wrong number of arguments. Note: In this case, you should not type-check the actual parameters.
+        if (numberOfParams != numberOfParamsTest) {
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Function call with wrong # of args");
+            ret = new ErrorType();
+            return ret;
+        }
+
+        //Calling a function with wrong type of arguments
+        //     Calling a function with an argument of the wrong type. Note: you should only check for this error 
+        //     if the number of arguments is correct. If there are several arguments with the wrong type, you must 
+        //     give an error message for each such argument.
+        
+       //myExpList.typeChecker(test.getParamTypes())
+
+
+       //            Actual type and formal type do not match
+       return test.getReturnType();
+        
+
+        }
+
+        //
+
     
     public void unparse(PrintWriter p, int indent) {
         myId.unparse(p, 0);
@@ -1917,12 +2373,13 @@ class NotNode extends UnaryExpNode {
         super(exp);
     }
 
-    public Type typeCheck() {
-        Type type = myExp.typeCheck();
+    public Type typeChecker() {
+        Type type = myExp.typeChecker();
         Type returnType = new BoolType();
 
         if (!type.isErrorType() && !type.isBoolType()) {
-            ErrMsg.fatal(lineNum(), charNum(), "Logical operator with non-bool operand");
+            //we can use geter methods from UnaryExpNode to get lineNum and charNum
+            ErrMsg.fatal(getLineNum(), getCharNum(), "Logical operator with non-bool operand");
         }
         
         
@@ -2121,6 +2578,8 @@ class GreaterEqNode extends BinaryExpNode {
     public GreaterEqNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
     }
+
+
 
     public void unparse(PrintWriter p, int indent) {
         p.print("(");
