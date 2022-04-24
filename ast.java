@@ -283,6 +283,31 @@ class StmtListNode extends ASTnode {
         myStmts = S;
     }
 
+    /*
+    * Type checker method for StmtListNode
+    *
+    * @param Type type, which we check the type of
+    * @return none
+    */
+    public void typeChecker(Type type) {
+
+        int length = myStmts.size();
+        int interator = 0;
+
+        //iterate thorugh length of myStmts
+        while (interator < length) {
+
+            StmtNode holder = null;
+            holder = myStmts.get(interator);
+
+            holder.typeChecker(type);
+
+        }
+
+        //end
+        return;
+    }   
+
     /***
      * nameAnalysis
      * Given a symbol table symTab, process each statement in the list.
@@ -293,11 +318,7 @@ class StmtListNode extends ASTnode {
         }
     } 
     
-    public void typeCheck(Type type) {
-        for(StmtNode increment : myStmts) {
-            increment.typeChecker(type);
-        }
-    }   
+
     
     public void unparse(PrintWriter p, int indent) {
         Iterator<StmtNode> it = myStmts.iterator();
@@ -347,6 +368,32 @@ class ExpListNode extends ASTnode {
     public int getLength() {
         return myExps.size();
     }
+
+    /*
+    * Type checker method for ExpListNode
+    *
+    * @param Type type, which we check the type of.
+    * @return none
+    */
+    public void typeChecker(Type type) {
+
+        int length = myExps.size();
+        int interator = 0;
+
+        //iterate thorugh length of myStmts
+        while (interator < length) {
+
+            ExpNode holder = null;
+            holder = myExps.get(interator);
+
+            //use typeChecker withOUT a parameter, unlike stmt
+            holder.typeChecker();
+
+        }
+
+        //end
+        return;
+    }   
 }
 
 // **********************************************************************
@@ -550,6 +597,19 @@ class FnDeclNode extends DeclNode {
         
         return null;
     }    
+
+    /*
+    *   Type checker method.
+    *
+    * @param none
+    *
+    * @return none
+    */
+    public void typeChecker() {
+        Type myType = this.myType.type();
+        myBody.typeChecker(myType);
+        return;
+    }
     
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
@@ -1479,8 +1539,6 @@ class ReturnStmtNode extends StmtNode {
             ErrMsg.fatal(getLineNum(), getCharNum(), "Bad return value");
         }
 
-        if(!getType.isVoidType())
-
         return;
     }
 
@@ -2017,8 +2075,7 @@ class DotAccessExpNode extends ExpNode {
 					}
 				}
 			} catch (EmptySymTableException ex) {
-				System.err.println("Unexpected EmptySymTableException " +
-								" in DotAccessExpNode.nameAnalysis");
+				System.err.println("Unexpected EmptySymTableException in DotAccessExpNode.nameAnalysis");
 				System.exit(-1);
 			} 
         }
