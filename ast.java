@@ -302,6 +302,7 @@ class StmtListNode extends ASTnode {
 
             holder.typeChecker(type);
 
+            interator++;
         }
 
         //end
@@ -378,17 +379,18 @@ class ExpListNode extends ASTnode {
     public void typeChecker(Type type) {
 
         int length = myExps.size();
-        int interator = 0;
+        int iterator = 0;
 
         //iterate thorugh length of myStmts
-        while (interator < length) {
+        while (iterator < length) {
 
             ExpNode holder = null;
-            holder = myExps.get(interator);
+            holder = myExps.get(iterator);
 
             //use typeChecker withOUT a parameter, unlike stmt
             holder.typeChecker();
 
+            iterator++;
         }
 
         //end
