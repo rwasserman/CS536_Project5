@@ -1,0 +1,40 @@
+int globalInt;
+globalInt = 5;
+
+bool globalBool;
+globalBool = globalInt;
+
+void testVoid;
+testVoid = 5;
+
+struct testStructA {
+
+    int structIntA;
+    bool structBoolA;
+
+};
+
+struct testStructB {
+
+    int structIntB;
+    bool structBoolB;
+}
+
+int main() {
+
+    testAssigningStructNameToStructName();
+
+}
+
+void testAssigningStructNameToStructName() {
+
+    testStructA = testStructB;
+    testStructB = testStructA;
+
+}
+
+void testAssigningStructVariableToStructVariable() {
+
+    
+
+}
