@@ -1539,6 +1539,7 @@ class ReturnStmtNode extends StmtNode {
             ErrMsg.fatal(getLineNum(), getCharNum(), "Bad return value");
         }
 
+
         return;
     }
 
@@ -1577,7 +1578,7 @@ abstract class ExpNode extends ASTnode {
     //              i think this is how it abstract methods work but feel free to change it 
     abstract public int getLineNum();
     abstract public int getCharNum();
-    public Type typeChecker() {};
+    abstract public Type typeChecker();
 
     /***
      * Default version for nodes with no names
@@ -2423,6 +2424,11 @@ class UnaryMinusNode extends UnaryExpNode {
         myExp.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeChecker() {
+
+        return null;
+    }
 }
 
 class NotNode extends UnaryExpNode {
@@ -2467,6 +2473,11 @@ class PlusNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeChecker() {
+
+        return null;
+    }
 }
 
 class MinusNode extends BinaryExpNode {
@@ -2480,6 +2491,11 @@ class MinusNode extends BinaryExpNode {
         p.print(" - ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeChecker() {
+
+        return null;
     }
 }
 
@@ -2495,6 +2511,11 @@ class TimesNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeChecker() {
+
+        return null;
+    }
 }
 
 class DivideNode extends BinaryExpNode {
@@ -2508,6 +2529,11 @@ class DivideNode extends BinaryExpNode {
         p.print(" / ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeChecker() {
+
+        return null;
     }
 }
 
@@ -2537,6 +2563,11 @@ class AndNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeChecker() {
+
+        return null;
+    }
 }
 
 class OrNode extends BinaryExpNode {
@@ -2559,6 +2590,11 @@ class OrNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeChecker() {
+
+        return null;
+    }
 }
 
 class EqualsNode extends BinaryExpNode {
@@ -2572,6 +2608,11 @@ class EqualsNode extends BinaryExpNode {
         p.print(" == ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeChecker() {
+
+        return null;
     }
 }
 
@@ -2587,6 +2628,11 @@ class NotEqualsNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeChecker() {
+
+        return null;
+    }
 }
 
 class LessNode extends BinaryExpNode {
@@ -2600,6 +2646,11 @@ class LessNode extends BinaryExpNode {
         p.print(" < ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeChecker() {
+
+        return null;
     }
 }
 
@@ -2615,6 +2666,11 @@ class GreaterNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeChecker() {
+
+        return null;
+    }
 }
 
 class LessEqNode extends BinaryExpNode {
@@ -2629,6 +2685,11 @@ class LessEqNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeChecker() {
+
+        return null;
+    }
 }
 
 class GreaterEqNode extends BinaryExpNode {
@@ -2636,13 +2697,16 @@ class GreaterEqNode extends BinaryExpNode {
         super(exp1, exp2);
     }
 
-
-
     public void unparse(PrintWriter p, int indent) {
         p.print("(");
         myExp1.unparse(p, 0);
         p.print(" >= ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeChecker() {
+
+        return null;
     }
 }
