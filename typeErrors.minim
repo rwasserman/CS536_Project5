@@ -1,11 +1,4 @@
-int globalInt;
-globalInt = 5;
-
-bool globalBool;
-globalBool = globalInt;
-
 void testVoid;
-testVoid = 5;
 
 struct testStructA {
 
@@ -18,13 +11,8 @@ struct testStructB {
 
     int structIntB;
     bool structBoolB;
-}
+};
 
-int main() {
-
-    testAssigningStructNameToStructName();
-
-}
 
 void testAssigningStructNameToStructName() {
 
@@ -36,5 +24,24 @@ void testAssigningStructNameToStructName() {
 void testAssigningStructVariableToStructVariable() {
 
     
+
+}
+
+void testFunctionAssignmenet() {
+
+
+}
+
+void testEqualityOperator
+
+
+int main() {
+
+    testAssigningStructNameToStructName();
+    testAssigningStructVariableToStructVariable();
+    testFunctionAssignmenet();
+    testEqualityOperator();
+
+    return 1;
 
 }
