@@ -2140,14 +2140,26 @@ class AssignExpNode extends ExpNode {
         Type expr = myExp.typeChecker();
         Type ret = left;
 
+
+
         //check if myLHS is error type
         if(left.isErrorType()) {
+
+
             ret = new ErrorType();
             return ret;
         }
 
+        if (expr == null) {
+            //EXAMPLE: a++; left is fine,, exp is null;
+
+            //dont know if this is intended behavior yet. 
+            return null;
+
+        }
+
         //check if expression is error type
-        if (expr.isErrorType()) {
+        if (expr.isErrorType()) {  //this is what is throwing NULL POINTER
             ret = new ErrorType();
             return ret;
         }
@@ -2246,16 +2258,23 @@ class CallExpNode extends ExpNode {
         myExpList.nameAnalysis(symTab);
     }    
 
+
+    /*
+    *
+    *
+    *
+    */
     public Type typeChecker() {
 
         Type ret = null;
         
         IdNode functionName = this.myId;
-        FnSym test = (FnSym)myId.sym();
-        ExpListNode params = this.myExpList;
-
-        int numberOfParams = params.getLength();
-        int numberOfParamsTest = test.getNumParams();
+        FnSym test = (FnSym)(myId.sym());
+        
+        ExpListNode paramsNode = this.myExpList;
+        
+        int numberOfParams = paramsNode.getLength();
+        //int numberOfParamsTest = test.getNumParams();
 
         //Check Calling something other than a function; e.g., "x();", where x is not a function name.
         //       Note: In this case, you should not type-check the actual parameters.
@@ -2269,27 +2288,64 @@ class CallExpNode extends ExpNode {
 
        
         //Calling a function with the wrong number of arguments. Note: In this case, you should not type-check the actual parameters.
-        if (numberOfParams != numberOfParamsTest) {
+        if (numberOfParams != test.getNumParams()) {
             ErrMsg.fatal(getLineNum(), getCharNum(), "Function call with wrong # of args");
             ret = new ErrorType();
             return ret;
         }
 
-        //Calling a function with wrong type of arguments
-        //     Calling a function with an argument of the wrong type. Note: you should only check for this error 
-        //     if the number of arguments is correct. If there are several arguments with the wrong type, you must 
-        //     give an error message for each such argument.
+        // String msg = "Calling a function with wrong type of arguments";
+        // //     Calling a function with an argument of the wrong type. Note: you should only check for this error 
+        // //     if the number of arguments is correct. If there are several arguments with the wrong type, you must 
+        // //     give an error message for each such argument.
+    
+        // //iterate though this i think
+        // //null check first though
+        // if (myExpList == null) {
+
+        //     //done with checks i think. set return type and move on. 
+
+        //     ret = test.getReturnType();
+        //     return ret;
+
+        // } else {
+
+        //     //handle cases like this
+        //     // //int testFunction(int testInt1, int testInt2, bool testBool1) { }
+
+        //     List<Type> params = test.getParamTypes();
+        //     List<Type> toCompare = paramsNode.
+        //     //set up for iteration. we already have numberOfParams from above
+        //     int iter = 0;
+            
+        //     while (iter < numberOfParams) {
+
+        //         Type writtenType = params.get(iter);
+        //         Type checkType = paramsNode.get(iter);
+
+        //         if (writtenType.equals(checkType)) {
+        //             //passes check. NO ERROR. Move on.
+        //         } else {
+        //             //fails check. not the same
+        //             ErrMsg.fatal(getLineNum(), getCharNum(), msg);
+        //         }
+                
+
+        //         //increase iter
+        //         iter++;
+        //     }
+
+        // }
+       
         
-       //myExpList.typeChecker(test.getParamTypes())
 
 
-       //            Actual type and formal type do not match
-       return test.getReturnType();
         
+        //myExpList.typeChecker(test.getParamTypes())
+        ret = test.getReturnType();
 
-        }
-
-        //
+        return ret;
+    }
 
     
     public void unparse(PrintWriter p, int indent) {

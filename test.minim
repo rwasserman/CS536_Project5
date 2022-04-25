@@ -1,5 +1,78 @@
-int a;
+int i;
 bool b;
-a = 2;
-bool = true;
-a < b;
+
+struct testStruct {
+    int testIntStuct;
+    bool testBoolStruct;
+};
+
+int main () {
+
+    int mainTest;
+    int mainTest2;
+
+    if (true) {
+        int testv;
+        
+        if (true) {
+            int voidGas;
+        }
+    }
+
+    return 1;
+}
+
+
+int testIntReturn() {
+
+    int a;
+    int b;
+
+    a = 5;
+    b = 121938;
+
+    a = a++;
+    a = a + b;
+    a = a - b;
+    a = a--;
+    a = a--;
+    a++;
+
+    return a;
+}
+
+
+int testIntReturn2(int testInt, bool testBool) {
+
+    int newInt;
+    newInt = -testInt;
+
+    if (testBool == true) {
+        
+        return newInt;
+    } else {
+        return testItn;
+    }
+
+    return testInt;
+}
+
+bool testBoolReturn() {
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
