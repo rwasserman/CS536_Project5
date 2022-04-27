@@ -408,6 +408,12 @@ abstract class DeclNode extends ASTnode {
      ***/
     abstract public Sym nameAnalysis(SymTable symTab);
 
+
+    /*
+    * Type checker method
+    *
+    * @return none
+    */
     public void typeChecker() {
         
     }
@@ -926,7 +932,10 @@ class PostIncStmtNode extends StmtNode {
         //     return new ErrorType();
         // }
 
-        if (!getType.isIntType()) {
+        if(getType.isIntType()) {
+            //do nothing
+        }
+        else {
             ErrMsg.fatal(getLineNum(), getCharNum(), "Arithmetic operator with non-numeric operand");
         }
 
@@ -1034,6 +1043,11 @@ class ReadStmtNode extends StmtNode {
         myExp.nameAnalysis(symTab);
     }
     
+    /*
+    * Type checker method
+    *
+    * @return none
+    */
     public void typeChecker(Type xUnused) {
         Type type = myExp.typeChecker();
 
@@ -1096,6 +1110,11 @@ class WriteStmtNode extends StmtNode {
         return;
     }
 
+    /*
+    * Type checker method
+    *
+    * @return none
+    */
     public void typeChecker(Type xUnused) {
         Type type = myExp.typeChecker();
 
@@ -1597,6 +1616,11 @@ class IntLitNode extends ExpNode {
         myIntVal = intVal;
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new IntType()
+    */
     public Type typeChecker() {
         return new IntType();
     }
@@ -1669,6 +1693,11 @@ class StringLitNode extends ExpNode {
         myStrVal = strVal;
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new StringType()
+    */
     public Type typeChecker() {
         return new StringType();
     }
@@ -1743,6 +1772,11 @@ class TrueNode extends ExpNode {
         p.print("true");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new IntType()
+    */
      public Type typeChecker() {
         return new BoolType();
     }
@@ -1801,6 +1835,11 @@ class FalseNode extends ExpNode {
         p.print("false");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new BoolType()
+    */
     public Type typeChecker() {
         return new BoolType();
     }
@@ -2084,6 +2123,11 @@ class DotAccessExpNode extends ExpNode {
         }
     }    
 
+    /*
+    * Type checker method
+    *
+    * @return new Type representing result of myId.typeChecker()
+    */
     public Type typeChecker() {
         return myId.typeChecker();
     }
@@ -2135,6 +2179,11 @@ class AssignExpNode extends ExpNode {
         myExp.nameAnalysis(symTab);
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
         Type left = myLhs.typeChecker();
         Type expr = myExp.typeChecker();
@@ -2260,9 +2309,9 @@ class CallExpNode extends ExpNode {
 
 
     /*
+    * Type checker method
     *
-    *
-    *
+    * @return new Type
     */
     public Type typeChecker() {
 
@@ -2337,9 +2386,6 @@ class CallExpNode extends ExpNode {
 
         // }
        
-        
-
-
         
         //myExpList.typeChecker(test.getParamTypes())
         ret = test.getReturnType();
@@ -2483,7 +2529,13 @@ class UnaryMinusNode extends UnaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
+        // TODO
 
         return null;
     }
@@ -2494,6 +2546,18 @@ class NotNode extends UnaryExpNode {
         super(exp);
     }
 
+    public void unparse(PrintWriter p, int indent) {
+        p.print("(!");
+        myExp.unparse(p, 0);
+        p.print(")");
+    }
+
+    /*
+    * Type checker method
+    * 
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
         Type type = myExp.typeChecker();
         Type returnType = new BoolType();
@@ -2506,12 +2570,6 @@ class NotNode extends UnaryExpNode {
         
         //return the type that results from this operation
         return returnType;
-    }
-
-    public void unparse(PrintWriter p, int indent) {
-        p.print("(!");
-        myExp.unparse(p, 0);
-        p.print(")");
     }
 }
 
@@ -2532,9 +2590,61 @@ class PlusNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
 
-        return null;
+        Type nodeType = null;
+        Type errorTypeSetter = new ErrorType(); //dont think this will work.
+
+        Type getExpType1 = this.myExp1.typeChecker();
+        Type getExpType2 = this.myExp2.typeChecker();
+
+        //check for error types
+        if (getExpType1.isErrorType()) {
+            //myExp1 type is ErrorTyp
+            nodeType = new ErrorType();
+        }
+
+        if (getExpType2.isErrorType()) {
+            //myExp2 type is ErrorType
+            nodeType = new ErrorType();
+        }
+
+        //check that both are int types
+        if (!getExpType1.isIntType()) {
+            //is NOT an int type (exp1)
+
+            //make sure line and char numbers are for the correct expression
+            int lineNum = this.myExp1.getLineNum();
+            int charNum = this.myExp1.getCharNum();
+
+            ErrMsg.fatal(lineNum, charNum, "Arithmetic operator with non-numeric operand");
+
+            nodeType = new ErrorType();
+        }
+
+        if (!getExpType2.isIntType()) {
+            //is NOT an int type (exp2)            
+            
+            //make sure line and char numbers are for the correct expression
+            int lineNum = this.myExp2.getLineNum();
+            int charNum = this.myExp2.getCharNum();
+
+            ErrMsg.fatal(lineNum, charNum, "Arithmetic operator with non-numeric operand");
+
+            nodeType = new ErrorType();
+        }
+
+        //set and return nodeType
+        if (!nodeType.isErrorType()) {
+            nodeType = new IntType();
+        }
+
+        return nodeType;
     }
 }
 
@@ -2551,9 +2661,61 @@ class MinusNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
 
-        return null;
+        Type nodeType = null;
+        Type errorTypeSetter = new ErrorType(); //dont think this will work.
+
+        Type getExpType1 = this.myExp1.typeChecker();
+        Type getExpType2 = this.myExp2.typeChecker();
+
+        //check for error types
+        if (getExpType1.isErrorType()) {
+            //myExp1 type is ErrorTyp
+            nodeType = new ErrorType();
+        }
+
+        if (getExpType2.isErrorType()) {
+            //myExp2 type is ErrorType
+            nodeType = new ErrorType();
+        }
+
+        //check that both are int types
+        if (!getExpType1.isIntType()) {
+            //is NOT an int type (exp1)
+
+            //make sure line and char numbers are for the correct expression
+            int lineNum = this.myExp1.getLineNum();
+            int charNum = this.myExp1.getCharNum();
+
+            ErrMsg.fatal(lineNum, charNum, "Arithmetic operator with non-numeric operand");
+
+            nodeType = new ErrorType();
+        }
+
+        if (!getExpType2.isIntType()) {
+            //is NOT an int type (exp2)            
+            
+            //make sure line and char numbers are for the correct expression
+            int lineNum = this.myExp2.getLineNum();
+            int charNum = this.myExp2.getCharNum();
+
+            ErrMsg.fatal(lineNum, charNum, "Arithmetic operator with non-numeric operand");
+
+            nodeType = new ErrorType();
+        }
+
+        //set and return nodeType
+        if (!nodeType.isErrorType()) {
+            nodeType = new IntType();
+        }
+
+        return nodeType;
     }
 }
 
@@ -2570,9 +2732,61 @@ class TimesNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
 
-        return null;
+        Type nodeType = null;
+        Type errorTypeSetter = new ErrorType(); //dont think this will work.
+
+        Type getExpType1 = this.myExp1.typeChecker();
+        Type getExpType2 = this.myExp2.typeChecker();
+
+        //check for error types
+        if (getExpType1.isErrorType()) {
+            //myExp1 type is ErrorTyp
+            nodeType = new ErrorType();
+        }
+
+        if (getExpType2.isErrorType()) {
+            //myExp2 type is ErrorType
+            nodeType = new ErrorType();
+        }
+
+        //check that both are int types
+        if (!getExpType1.isIntType()) {
+            //is NOT an int type (exp1)
+
+            //make sure line and char numbers are for the correct expression
+            int lineNum = this.myExp1.getLineNum();
+            int charNum = this.myExp1.getCharNum();
+
+            ErrMsg.fatal(lineNum, charNum, "Arithmetic operator with non-numeric operand");
+
+            nodeType = new ErrorType();
+        }
+
+        if (!getExpType2.isIntType()) {
+            //is NOT an int type (exp2)            
+            
+            //make sure line and char numbers are for the correct expression
+            int lineNum = this.myExp2.getLineNum();
+            int charNum = this.myExp2.getCharNum();
+
+            ErrMsg.fatal(lineNum, charNum, "Arithmetic operator with non-numeric operand");
+
+            nodeType = new ErrorType();
+        }
+
+        //set and return nodeType
+        if (!nodeType.equals(new ErrorType())) {
+            nodeType = new IntType();
+        }
+
+        return nodeType;
     }
 }
 
@@ -2589,29 +2803,67 @@ class DivideNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
 
-        return null;
+        Type nodeType = null;
+        Type errorTypeSetter = new ErrorType(); //dont think this will work.
+
+        Type getExpType1 = this.myExp1.typeChecker();
+        Type getExpType2 = this.myExp2.typeChecker();
+
+        //check for error types
+        if (getExpType1.isErrorType()) {
+            //myExp1 type is ErrorTyp
+            nodeType = new ErrorType();
+        }
+
+        if (getExpType2.isErrorType()) {
+            //myExp2 type is ErrorType
+            nodeType = new ErrorType();
+        }
+
+        //check that both are int types
+        if (!getExpType1.isIntType()) {
+            //is NOT an int type (exp1)
+
+            //make sure line and char numbers are for the correct expression
+            int lineNum = this.myExp1.getLineNum();
+            int charNum = this.myExp1.getCharNum();
+
+            ErrMsg.fatal(lineNum, charNum, "Arithmetic operator with non-numeric operand");
+
+            nodeType = new ErrorType();
+        }
+
+        if (!getExpType2.isIntType()) {
+            //is NOT an int type (exp2)            
+            
+            //make sure line and char numbers are for the correct expression
+            int lineNum = this.myExp2.getLineNum();
+            int charNum = this.myExp2.getCharNum();
+
+            ErrMsg.fatal(lineNum, charNum, "Arithmetic operator with non-numeric operand");
+
+            nodeType = new ErrorType();
+        }
+
+        //set and return nodeType
+        if (!nodeType.equals(new ErrorType())) {
+            nodeType = new IntType();
+        }
+
+        return nodeType;
     }
 }
 
 class AndNode extends BinaryExpNode {
     public AndNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
-    }
-
-    public Type typeCheck() {
-        
-        
-        
-        Type returnType = new BoolType();
-
-
-
-
-
-
-        return returnType;
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -2622,7 +2874,14 @@ class AndNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
+
+        //Logical operator with non-bool operand
 
         return null;
     }
@@ -2633,14 +2892,6 @@ class OrNode extends BinaryExpNode {
         super(exp1, exp2);
     }
 
-    public Type typeCheck() {
-
-        Type returnType = new BoolType();
-
-
-        return returnType;
-    }
-
     public void unparse(PrintWriter p, int indent) {
         p.print("(");
         myExp1.unparse(p, 0);
@@ -2649,7 +2900,14 @@ class OrNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
+
+        //Logical operator with non-bool operand
 
         return null;
     }
@@ -2668,7 +2926,14 @@ class EqualsNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method with message Relational operator with non-numeric operand
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
+
+        //Relational operator with non-numeric operand
 
         return null;
     }
@@ -2687,8 +2952,15 @@ class NotEqualsNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method with message Relational operator with non-numeric operand
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
 
+
+        //Relational operator with non-numeric operand
         return null;
     }
 }
@@ -2706,7 +2978,14 @@ class LessNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method with message Relational operator with non-numeric operand
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
+
+        //Relational operator with non-numeric operand
 
         return null;
     }
@@ -2725,7 +3004,14 @@ class GreaterNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method with message Relational operator with non-numeric operand
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
+
+        //Relational operator with non-numeric operand
 
         return null;
     }
@@ -2744,7 +3030,15 @@ class LessEqNode extends BinaryExpNode {
         p.print(")");
     }
 
+    
+    /*
+    * Type checker method with message Relational operator with non-numeric operand
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
+
+        //Relational operator with non-numeric operand
 
         return null;
     }
@@ -2763,7 +3057,14 @@ class GreaterEqNode extends BinaryExpNode {
         p.print(")");
     }
 
+    /*
+    * Type checker method with message Relational operator with non-numeric operand
+    *
+    * @return new Type
+    */
     public Type typeChecker() {
+
+        //Relational operator with non-numeric operand
 
         return null;
     }
